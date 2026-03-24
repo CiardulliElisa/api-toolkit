@@ -7,7 +7,7 @@ import L from "leaflet";
 
 import { MaptilerLayer } from "@maptiler/leaflet-maptilersdk";
 
-const Map = ({ latlng }) => {
+const Map = ({ locations }) => {
 
   /* delete L.Icon.Default.prototype._getIconUrl;
   
@@ -22,17 +22,20 @@ const Map = ({ latlng }) => {
 
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [zoom] = useState(15);
+  const [zoom] = useState(10);
 
   useEffect(() => {
-    if (map.current) return;
+    
+    if (!locations || locations.length === 0 || map.current) return;
+
+    const firstLocation = locations[0].coords;
 
     map.current = new L.Map(mapContainer.current, {
-      center: L.latLng(latlng.lat, latlng.lng),
+      center: L.latLng(firstLocation.lat, firstLocation.lng),
       zoom: zoom,
     });
 
-    const mtLayer = new MaptilerLayer({
+    new MaptilerLayer({
       apiKey: "sM7PRFpW3UrpaMixCLPu",
       style: "basic",
     }).addTo(map.current);
@@ -40,14 +43,26 @@ const Map = ({ latlng }) => {
     const customIcon = L.divIcon({
       html: '<span style="font-size: 30px;">📍</span>',
       className: "customIcon",
-      iconAnchor: [12, 24],
+      iconAnchor: [15, 30],
     });
 
-    L.marker([latlng.lat, latlng.lng], { icon: customIcon }).addTo(map.current);
+    const points = [];
 
-    /* L.marker([latlng.lat, latlng.lng]).addTo(map.current); */
+    locations.forEach((loc) => {
+      L.marker([loc.coords.lat, loc.coords.lng], { icon: customIcon }).addTo(
+        map.current,
+      );
+      points.push([loc.coords.lat, loc.coords.lng]);
+    });
 
-  }, [latlng]);
+    if (points.length > 0) {
+      const bounds = L.latLngBounds(points);
+      map.current.fitBounds(bounds, {
+        padding: [50, 50],
+      });
+    }
+
+  }, [locations]);
 
   return (
     <div className="w-full h-full relative">
