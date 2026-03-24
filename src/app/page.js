@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Card, Spinner } from "react-bootstrap";
+import { Card, Spinner, Dropdown } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
 const Map = dynamic(() => import("@/components/map"), {
@@ -9,8 +9,10 @@ const Map = dynamic(() => import("@/components/map"), {
 });
 
 export default function Home() {
+
   const [locations, setLocations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedApi, setSelectedApi] = useState("Select an API...");
 
  useEffect(() => {
    fetch("/api/data")
@@ -24,12 +26,30 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen bg-gray-100 p-10 flex justify-center">
+      {/* Card containing the map tool */}
       <Card className="h-full shadow-xl overflow-hidden w-full">
-        <Card.Body className="p-0 flex flex-col h-full p-2">
+        <Card.Body className="p-0 flex flex-col h-full p-2 justify-center items-center">
           <div className="p-4 bg-white border-b">
-            <Card.Title className="text-center m-0 text-gray-700">
-              Api Title
-            </Card.Title>
+            {/* Dropdown to pick the API to analyse */}
+            <Dropdown className="w-auto">
+              <Dropdown.Toggle variant="outline-dark" id="dropdown-basic">
+                {selectedApi}
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="max-h-60 overflow-y-auto">
+                {locations.length === 0 ? (
+                  <Dropdown.Item disabled>No APIs available</Dropdown.Item>
+                ) : (
+                  locations.map((loc) => (
+                    <Dropdown.Item
+                      key={loc.id}
+                      onClick={() => setSelectedApi(loc.id)}
+                    >
+                      {loc.id}
+                    </Dropdown.Item>
+                  ))
+                )}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
           <div className="flex-grow relative w-full bg-gray-200">
             <Map locations={locations} />
