@@ -25,26 +25,27 @@ const Map = ({ locations }) => {
   const [zoom] = useState(10);
 
   useEffect(() => {
-    
-    if (
-      !locations ||
-      locations.length === 0 ||
-      map.current ||
-      !mapContainer.current
-    )
-      return;
+    if (!locations || locations.length === 0 || !mapContainer.current) return;
 
-    const firstLocation = locations[0].coords;
+    if (!map.current) {
+      const firstLocation = locations[0].coords;
 
-    map.current = new L.Map(mapContainer.current, {
-      center: L.latLng(firstLocation.lat, firstLocation.lng),
-      zoom: zoom,
+      map.current = new L.Map(mapContainer.current, {
+        center: L.latLng(firstLocation.lat, firstLocation.lng),
+        zoom: zoom,
+      });
+
+      new MaptilerLayer({
+        apiKey: "sM7PRFpW3UrpaMixCLPu",
+        style: "basic",
+      }).addTo(map.current);
+    }
+
+    map.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        map.current.removeLayer(layer);
+      }
     });
-
-    new MaptilerLayer({
-      apiKey: "sM7PRFpW3UrpaMixCLPu",
-      style: "basic",
-    }).addTo(map.current);
 
     const customIcon = L.divIcon({
       html: '<span style="font-size: 30px;">📍</span>',
@@ -65,9 +66,9 @@ const Map = ({ locations }) => {
       const bounds = L.latLngBounds(points);
       map.current.fitBounds(bounds, {
         padding: [50, 50],
+        animate: true,
       });
     }
-
   }, [locations]);
 
   return (
