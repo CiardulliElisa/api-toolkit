@@ -11,18 +11,27 @@ const Map = dynamic(() => import("@/components/map"), {
 export default function Home() {
 
   const [locations, setLocations] = useState([]);
+  const [apis, setApis] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedApi, setSelectedApi] = useState("Select an API...");
 
- useEffect(() => {
-   fetch("/api/data")
-     .then((response) => response.json())
-     .then((data) => {
-       setLocations(data);
-       setIsLoading(false);
-     })
-     .catch(() => setIsLoading(false));
- }, []);
+  useEffect(() => {
+    fetch("/api/data")
+      .then((response) => response.json())
+      .then((data) => {
+        setLocations(data);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/metadata")
+      .then((response) => response.json())
+      .then((data) => {
+        setApis(data);
+      })
+  }, []);
 
   return (
     <main className="w-screen h-screen bg-gray-100 p-10 flex justify-center">
@@ -36,15 +45,15 @@ export default function Home() {
                 {selectedApi}
               </Dropdown.Toggle>
               <Dropdown.Menu className="max-h-60 overflow-y-auto">
-                {locations.length === 0 ? (
-                  <Dropdown.Item disabled>No APIs available</Dropdown.Item>
+                {apis.length === 0 ? (
+                  <Dropdown.Item disabled>APIs Loading</Dropdown.Item>
                 ) : (
-                  locations.map((loc) => (
+                  apis.map((api) => (
                     <Dropdown.Item
-                      key={loc.id}
-                      onClick={() => setSelectedApi(loc.id)}
+                      key={api.id}
+                      onClick={() => setSelectedApi(api.title)}
                     >
-                      {loc.id}
+                      {api.title}
                     </Dropdown.Item>
                   ))
                 )}

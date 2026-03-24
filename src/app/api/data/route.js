@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
 
   const API_URL =
-    "https://tourism.opendatahub.com/v1/Accommodation?pagesize=25&pagenumber=1&language=en";
+    "https://tourism.opendatahub.com/v1/Accommodation?pagesize=250&pagenumber=1&language=en";
 
   try {
 
