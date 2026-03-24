@@ -10,7 +10,10 @@ import { MaptilerLayer } from "@maptiler/leaflet-maptilersdk";
 const Map = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const center = { lng: 13.338414, lat: 52.507932 };
+  const center = {
+    lng: 11.3303,
+    lat: 46.4777
+  };
   const [zoom] = useState(12);
 
   useEffect(() => {
@@ -24,10 +27,11 @@ const Map = () => {
     const mtLayer = new MaptilerLayer({
       apiKey: "sM7PRFpW3UrpaMixCLPu",
     }).addTo(map.current);
+    
   }, [center.lng, center.lat, zoom]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="w-full h-full relative">
       <div ref={mapContainer} className="absolute inset-0" />
     </div>
   );
