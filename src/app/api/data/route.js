@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request) {
 
-  const API_URL =
-    "https://tourism.opendatahub.com/v1/Accommodation?pagesize=250&pagenumber=1&language=en";
+  const { searchParams } = new URL(request.url);
+  const API_URL = searchParams.get("url");
 
   try {
 
@@ -29,11 +29,22 @@ export async function GET() {
     }
 
     const locations = data.Items.map((item) => {
+
+      const lat =
+        item.Latitude ||
+        item.GpsInfo?.[0]?.Latitude ||
+        item.GpsPoints?.position?.Latitude;
+      
+      const lng =
+        item.Longitude ||
+        item.GpsInfo?.[0]?.Longitude ||
+        item.GpsPoints?.position?.Longitude;
+      
       return {
         id: item.Id,
         coords: {
-          lat: item.Latitude || 0,
-          lng: item.Longitude || 0,
+          lat: parseFloat(lat),
+          lng: parseFloat(lng),
         },
       };
     });

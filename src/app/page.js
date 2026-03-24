@@ -9,28 +9,35 @@ const Map = dynamic(() => import("@/components/map"), {
 });
 
 export default function Home() {
-
   const [locations, setLocations] = useState([]);
   const [apis, setApis] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedApi, setSelectedApi] = useState("Select an API...");
 
-  useEffect(() => {
-    fetch("/api/data")
-      .then((response) => response.json())
+  const handleApiSelect = (api) => {
+    setSelectedApi(api.title);
+    setIsLoading(true);
+    const fetchUrl = `/api/data?url=${api.url}`;
+    fetch(fetchUrl)
+      .then((res) => res.json())
       .then((data) => {
         setLocations(data);
         setIsLoading(false);
       })
-      .catch(() => setIsLoading(false));
-  }, []);
+      .catch((err) => {
+        console.error("Data fetch error:", err);
+        setLocations([]);
+        setIsLoading(false);
+      });
+  };
 
+  /* Fetch apis to fill the dropdown menu */
   useEffect(() => {
     fetch("/api/metadata")
       .then((response) => response.json())
       .then((data) => {
         setApis(data);
-      })
+      });
   }, []);
 
   return (
@@ -51,7 +58,7 @@ export default function Home() {
                   apis.map((api) => (
                     <Dropdown.Item
                       key={api.id}
-                      onClick={() => setSelectedApi(api.title)}
+                      onClick={() => handleApiSelect(api)}
                     >
                       {api.title}
                     </Dropdown.Item>
@@ -60,8 +67,8 @@ export default function Home() {
               </Dropdown.Menu>
             </Dropdown>
           </div>
-          <div className="flex-grow relative w-full bg-gray-200">
-            <Map locations={locations} />
+          <div className="flex-grow relative w-full">
+            <Map locations={locations || []} />
             {isLoading && (
               <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm transition-opacity">
                 <Spinner

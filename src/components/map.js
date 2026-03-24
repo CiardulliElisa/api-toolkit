@@ -26,7 +26,13 @@ const Map = ({ locations }) => {
 
   useEffect(() => {
     
-    if (!locations || locations.length === 0 || map.current) return;
+    if (
+      !locations ||
+      locations.length === 0 ||
+      map.current ||
+      !mapContainer.current
+    )
+      return;
 
     const firstLocation = locations[0].coords;
 
