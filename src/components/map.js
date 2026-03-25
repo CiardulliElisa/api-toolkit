@@ -2,66 +2,79 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
-
 import L from "leaflet";
-
 import { MaptilerLayer } from "@maptiler/leaflet-maptilersdk";
 
 const Map = ({ locations }) => {
-
-  /* delete L.Icon.Default.prototype._getIconUrl;
-  
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-    iconUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  }); */
 
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [zoom] = useState(10);
 
+  // Initialize the map skeleton (runs once on mount)
   useEffect(() => {
-    if (!locations || locations.length === 0 || !mapContainer.current) return;
 
-    if (!map.current) {
-      const firstLocation = locations[0].coords;
+    // If the div isn't ready or map already exists, do nothing
+    if (!mapContainer.current || map.current) return;
 
-      map.current = new L.Map(mapContainer.current, {
-        center: L.latLng(firstLocation.lat, firstLocation.lng),
-        zoom: zoom,
-      });
+    // Create the map instance
+    map.current = new L.Map(mapContainer.current, {
+      center: [20, 0],
+      zoom: 2,
+    });
 
-      new MaptilerLayer({
-        apiKey: "sM7PRFpW3UrpaMixCLPu",
-        style: "basic",
-      }).addTo(map.current);
-    }
+    // Add style to map
+    new MaptilerLayer({
+      apiKey: "sM7PRFpW3UrpaMixCLPu",
+      style: "basic",
+    }).addTo(map.current);
 
+    // Cleanup
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  // Handle Markers and View Logic: runs whenever 'locations' array changes
+  useEffect(() => {
+    
+    // Wait until the map is initialized
+    if (!map.current) return;
+
+    // Clear existing markers before adding new ones
     map.current.eachLayer((layer) => {
       if (layer instanceof L.Marker) {
         map.current.removeLayer(layer);
       }
     });
 
+    // If no locations provided, the map stays empty but visible.
+    if (!locations || locations.length === 0) return;
+
+    // Custom marker
     const customIcon = L.divIcon({
-      html: '<span style="font-size: 30px;">📍</span>',
+      html: '<span style="font-size: 30px; text-shadow: 2px 2px 5px rgba(0,0,0,0.3);">📍</span>',
       className: "customIcon",
-      iconAnchor: [15, 30],
+      iconAnchor: [15, 30], // Centers the tip of the pin
     });
 
     const points = [];
 
+    // Add marker for each location
     locations.forEach((loc) => {
-      L.marker([loc.coords.lat, loc.coords.lng], { icon: customIcon }).addTo(
-        map.current,
-      );
-      points.push([loc.coords.lat, loc.coords.lng]);
+      if (loc.coords?.lat && loc.coords?.lng) {
+        L.marker([loc.coords.lat, loc.coords.lng], { icon: customIcon }).addTo(
+          map.current,
+        );
+        // Save all coordinates to calculate map bounds later
+        points.push([loc.coords.lat, loc.coords.lng]);
+      }
     });
 
+    // Calculate bounds to zoom into map correctly
     if (points.length > 0) {
       const bounds = L.latLngBounds(points);
       map.current.fitBounds(bounds, {
